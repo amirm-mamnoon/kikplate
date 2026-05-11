@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Optional tag to run against (e.g. v1.2.3)
-        required: false
+        description: Git tag to run against (e.g. v1.2.3). Required when using Run workflow.
+        required: true
         type: string
   release:
     types: [published]
@@ -23,29 +23,19 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' || github.event.release.prerelease == false
     steps:
+      - name: Require tag for manual runs
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [ -z "${{ inputs.tag }}" ]; then
+            echo "workflow_dispatch requires the tag input (e.g. v1.2.3)." >&2
+            exit 1
+          fi
+
       - name: Checkout published tag
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.tag || github.event.release.tag_name || github.ref_name }}
           fetch-depth: 0
-
-      - name: Resolve tag
-        id: tag
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            TAG="${{ inputs.tag }}"
-          else
-            TAG="${{ github.event.release.tag_name }}"
-          fi
-          if [ -z "$TAG" ]; then
-            echo "No tag provided/resolved" >&2
-            exit 1
-          fi
-          case "$TAG" in
-            v*) ;;
-            *) TAG="v${TAG}" ;;
-          esac
-          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Go
         uses: actions/setup-go@v5

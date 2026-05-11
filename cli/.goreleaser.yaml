@@ -2,10 +2,6 @@ version: 2
 
 project_name: kikplate
 
-before:
-  hooks:
-    - sh -c "cd cli && go mod tidy"
-
 builds:
   - id: cli
     dir: cli

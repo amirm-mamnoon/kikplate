@@ -47,18 +47,6 @@ jobs:
           esac
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
 
-      - name: Download existing release assets
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ steps.tag.outputs.tag }}
-        run: |
-          mkdir -p dist/prebuilt
-          gh release download "$TAG" \
-            --repo "${{ github.repository }}" \
-            --pattern "kikplate-*.tar.gz" \
-            --pattern "kikplate-*.zip" \
-            --dir dist/prebuilt
-
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -77,7 +65,7 @@ jobs:
         with:
           distribution: goreleaser
           version: "~> v2"
-          args: release --clean --config cli/.goreleaser.yaml
+          args: release --config cli/.goreleaser.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
